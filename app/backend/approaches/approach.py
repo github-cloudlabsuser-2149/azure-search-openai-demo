@@ -130,6 +130,55 @@ class GPTReasoningModelSupport:
 
 
 class Approach(ABC):
+    """
+    Abstract base class for implementing various retrieval and reasoning approaches using Azure Cognitive Search and OpenAI services.
+    Attributes:
+        GPT_REASONING_MODELS (dict): Supported GPT reasoning models and their streaming capabilities.
+        RESPONSE_DEFAULT_TOKEN_LIMIT (int): Default token limit for standard responses.
+        RESPONSE_REASONING_DEFAULT_TOKEN_LIMIT (int): Default token limit for reasoning model responses.
+    Args:
+        search_client (SearchClient): Azure Cognitive Search client for document retrieval.
+        openai_client (AsyncOpenAI): OpenAI client for generating embeddings and completions.
+        auth_helper (AuthenticationHelper): Helper for building security filters.
+        query_language (Optional[str]): Language code for search queries.
+        query_speller (Optional[str]): Speller configuration for search queries.
+        embedding_deployment (Optional[str]): Deployment name for embedding model (Azure OpenAI).
+        embedding_model (str): Name of the embedding model.
+        embedding_dimensions (int): Number of dimensions for embeddings.
+        embedding_field (str): Field name for storing embeddings in the search index.
+        openai_host (str): Host URL for OpenAI API.
+        vision_endpoint (str): Endpoint for vision embedding service.
+        vision_token_provider (Callable[[], Awaitable[str]]): Async function to provide vision API token.
+        prompt_manager (PromptManager): Manager for prompt templates and overrides.
+        reasoning_effort (Optional[str]): Reasoning effort level for reasoning models.
+    Methods:
+        build_filter(overrides, auth_claims) -> Optional[str]:
+            Constructs a filter string for search queries based on category and security filters.
+        async search(...):
+            Executes a search query using text, vector, or semantic search and returns filtered documents.
+        async run_agentic_retrieval(...):
+            Performs agentic retrieval using a knowledge agent and returns both the agent response and mapped documents.
+        get_sources_content(results, use_semantic_captions, use_image_citation) -> list[str]:
+            Formats the content of source documents for inclusion in responses, optionally using semantic captions.
+        get_citation(sourcepage, use_image_citation) -> str:
+            Generates a citation string for a document source, optionally formatting for image citations.
+        async compute_text_embedding(q: str):
+            Computes a text embedding for the given query using the configured embedding model.
+        async compute_image_embedding(q: str):
+            Computes an image embedding for the given query using the vision endpoint.
+        get_system_prompt_variables(override_prompt: Optional[str]) -> dict[str, str]:
+            Determines prompt variables for system prompts, supporting full override or injection.
+        get_response_token_limit(model: str, default_limit: int) -> int:
+            Returns the appropriate token limit for the given model.
+        create_chat_completion(...):
+            Creates a chat completion request with the appropriate parameters for the selected model.
+        format_thought_step_for_chatcompletion(...):
+            Formats a step in the reasoning process for logging or display, including model and usage info.
+        async run(...):
+            Abstract method to execute the approach logic. Must be implemented by subclasses.
+        async run_stream(...):
+            Abstract method to execute the approach logic as a stream. Must be implemented by subclasses.
+    """
     # List of GPT reasoning models support
     GPT_REASONING_MODELS = {
         "o1": GPTReasoningModelSupport(streaming=False),
